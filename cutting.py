@@ -95,13 +95,13 @@ def find_red(a_im):
 
 
 def find_pos(old):
-    new = [TOTAL_DEGREE*6/8,
-           TOTAL_DEGREE*1/8,
-           TOTAL_DEGREE*4/8,
-           TOTAL_DEGREE*7/8,
-           TOTAL_DEGREE*2/8,
-           TOTAL_DEGREE*3/8,
-           TOTAL_DEGREE*6/8,
+    new = [TOTAL_DEGREE * 6 / 8,
+           TOTAL_DEGREE * 1 / 8,
+           TOTAL_DEGREE * 4 / 8,
+           TOTAL_DEGREE * 7 / 8,
+           TOTAL_DEGREE * 2 / 8,
+           TOTAL_DEGREE * 3 / 8,
+           TOTAL_DEGREE * 6 / 8,
            0,
            TOTAL_DEGREE]
     # num = len(old)
@@ -302,44 +302,60 @@ def start_cutting():
                 print("回合：" + str(i))
                 print("pos_record" + str(pos_record))
                 print("pos_status" + str(pos_status))
-
+                strategy = "未选择策略"
                 # 根据上一次的结果判定
                 if IF_START == 0 or time.time() - START > 65 or pos_status[i - 1] == 3 or green <= 0.05:
                     print("END\n")
                     break
                 elif pos_status[i - 1] == 2:
+                    strategy = "保持原来角度"
                     current_degree = pos_record[i - 1]
-                # elif pos_status[i - 1] == pos_status[i - 2] and pos_record[i - 1] - pos_record[i - 2] >= TOTAL_DEGREE/8:
-                #     current_degree = (pos_record[i - 1] + pos_record[i - 2])
                 elif pos_status[i - 1] == 1:
-                    # 上一次不失败
+                    normal_adjust = TOTAL_DEGREE / 8
                     if pos_record[i - 1] <= TOTAL_DEGREE / 4:
-                        # 上一次位于上面
-                        current_degree = pos_record[i - 1] + TOTAL_DEGREE / 8
+                        strategy = "向下移动"+str(normal_adjust)
+                        current_degree = pos_record[i - 1] + normal_adjust
                     elif pos_record[i - 1] <= TOTAL_DEGREE / 2:
-                        current_degree = pos_record[i - 1] - TOTAL_DEGREE / 8
+                        strategy = "向上移动" + str(normal_adjust)
+                        current_degree = pos_record[i - 1] - normal_adjust
                     elif pos_record[i - 1] <= TOTAL_DEGREE * 3 / 4:
-                        current_degree = pos_record[i - 1] + TOTAL_DEGREE / 8
+                        strategy = "向下移动" + str(normal_adjust)
+                        current_degree = pos_record[i - 1] + normal_adjust
                     else:
-                        current_degree = pos_record[i - 1] - TOTAL_DEGREE / 8
+                        strategy = "向上移动" + str(normal_adjust)
+                        current_degree = pos_record[i - 1] - normal_adjust
 
-                    if len(pos_status) >= 3:
-                        if pos_status[i - 1] == pos_status[i - 3] and pos_record[i - 1] == pos_record[i - 3]:
-                            if pos_record[i - 1] <= TOTAL_DEGREE / 4:
-                                # 反转，策略出现问题
-                                current_degree = pos_record[i - 1] - TOTAL_DEGREE / 8
-                            elif pos_record[i - 1] <= TOTAL_DEGREE / 2:
-                                current_degree = pos_record[i - 1] + TOTAL_DEGREE / 8
-                            elif pos_record[i - 1] <= TOTAL_DEGREE * 3 / 4:
-                                current_degree = pos_record[i - 1] - TOTAL_DEGREE / 8
-                            else:
-                                current_degree = pos_record[i - 1] + TOTAL_DEGREE / 8
+                    # if len(pos_status) >= 3:
+                    #     if pos_status[i - 1] == pos_status[i - 3] and pos_record[i - 1] == pos_record[i - 3]:
+                    #         if pos_record[i - 1] <= TOTAL_DEGREE / 4:
+                    #             # 反转，策略出现问题
+                    #             strategy = "向上移动" + str(normal_adjust)
+                    #             current_degree = pos_record[i - 1] - normal_adjust
+                    #         elif pos_record[i - 1] <= TOTAL_DEGREE / 2:
+                    #             strategy = "向下移动" + str(normal_adjust)
+                    #             current_degree = pos_record[i - 1] + normal_adjust
+                    #         elif pos_record[i - 1] <= TOTAL_DEGREE * 3 / 4:
+                    #             strategy = "向上移动" + str(normal_adjust)
+                    #             current_degree = pos_record[i - 1] - normal_adjust
+                    #         else:
+                    #             strategy = "向下移动" + str(normal_adjust)
+                    #             current_degree = pos_record[i - 1] + normal_adjust
                 else:
-                    for history_index in range(len(pos_status)):
-                        if pos_status[history_index] == max(pos_status):
-                            print("history:" + str(history_index))
-                            current_degree = pos_record[history_index]
-                            break
+                    if max(pos_status) == 2:
+                        for history_index in range(len(pos_status)):
+                            if pos_status[history_index] == max(pos_status):
+                                current_degree = pos_record[history_index]
+                                strategy = "选择最佳历史" + str(current_degree)
+                                break
+                    else:
+                        strategy = "移动方向错误，从" + str(pos_record[i - 2])+"到" + str(pos_record[i - 1]) + ", "
+                        change_pos = pos_record[i - 1] - pos_record[i - 2]
+                        if change_pos >= 0:
+                            strategy += "向上移动"+str(abs(change_pos))
+                            current_degree = pos_record[i - 2] - abs(change_pos)
+                        else:
+                            strategy += "向下移动" + str(abs(change_pos))
+                            current_degree = pos_record[i - 2] + abs(change_pos)
 
                 if current_degree < 0:
                     current_degree = 0
@@ -347,6 +363,7 @@ def start_cutting():
                     current_degree = TOTAL_DEGREE
 
                 axe(current_degree, dely, bias)
+                print(strategy)
                 pos_record.append(current_degree)
                 time.sleep(3)
                 green = find_green(get_screen_arry(CUT_TREE_LINE))
@@ -354,51 +371,7 @@ def start_cutting():
                 old_green = green
                 print(
                     "END " + str(i) + ";Current Green: " + str(green) + ";current_degree:" + str(current_degree) + "\n")
-            # 接下来开始第二次。。。。
-            # while 1:
-            #     status = get_last_success_status(old_green, green)
-            #     if IF_START == 0: break
-            #     if time.time() - START > 65: break
-            #     if try_times >= 10: break
-            #     if status == 3: break
-            #     if status <= 2:
-            #         # 有手感了，或连续两次大角度失败
-            #         if status == 1 or count_not_success >= 2:
-            #             count_not_success = 0
-            #             if last_degree - move_aex >= 45:
-            #                 current_degree = last_degree + move_aex / 2
-            #                 # last_degree = current_degree
-            #                 # count_not_success = 0
-            #             else:
-            #                 current_degree = current_degree - move_aex / 2
-            #                 # last_degree = current_degree
-            #                 # count_not_success = 0
-            #         else:
-            #             count_not_success += 1
-            #             # 失败的情况
-            #             if last_degree >= 45:
-            #                 # 上一次在上面和中间
-            #                 # 往下走
-            #                 current_degree = last_degree + move_aex
-            #             else:
-            #                 current_degree = last_degree - move_aex
-            #     else:
-            #         move_aex = last_degree - current_degree
-            #         count_not_success = 0
-            #         current_degree = last_degree
-            #     print("current_degree:{0}; last_degree:{1}; move_aex:{2}; old_green:{3}; green:{4}".
-            #           format(current_degree,
-            #                  last_degree,
-            #                  move_aex,
-            #                  old_green,
-            #                  green))
-            #     axe(current_degree, dely, bias)
-            #     last_degree = current_degree
-            #     print('Adjust Pos:\t' + str(current_degree))
-            #     time.sleep(3)
-            #     old_green = green
-            #     green = find_green(get_screen_arry(CUT_TREE_LINE))
-            #     try_times += 1
+            # 一回合结束了，开始决定是继续还是放弃
             print('Time:\t' + str(time.time() - START))
             print('Rounds:\t' + str(rounds + 1))
             if rounds >= 5: break
