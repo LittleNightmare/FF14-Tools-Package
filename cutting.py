@@ -325,29 +325,44 @@ def start_cutting():
                         strategy = "向上移动" + str(normal_adjust)
                         current_degree = pos_record[i - 1] - normal_adjust
 
-                    # if len(pos_status) >= 3:
-                    #     if pos_status[i - 1] == pos_status[i - 3] and pos_record[i - 1] == pos_record[i - 3]:
-                    #         if pos_record[i - 1] <= TOTAL_DEGREE / 4:
-                    #             # 反转，策略出现问题
-                    #             strategy = "向上移动" + str(normal_adjust)
-                    #             current_degree = pos_record[i - 1] - normal_adjust
-                    #         elif pos_record[i - 1] <= TOTAL_DEGREE / 2:
-                    #             strategy = "向下移动" + str(normal_adjust)
-                    #             current_degree = pos_record[i - 1] + normal_adjust
-                    #         elif pos_record[i - 1] <= TOTAL_DEGREE * 3 / 4:
-                    #             strategy = "向上移动" + str(normal_adjust)
-                    #             current_degree = pos_record[i - 1] - normal_adjust
-                    #         else:
-                    #             strategy = "向下移动" + str(normal_adjust)
-                    #             current_degree = pos_record[i - 1] + normal_adjust
+                    if len(pos_status) >= 3:
+                        if pos_status[i - 1] == pos_status[i - 3] and pos_record[i - 1] == pos_record[i - 3]:
+                            if pos_record[i - 1] <= TOTAL_DEGREE / 4:
+                                # 反转，策略出现问题
+                                strategy = "向上移动" + str(normal_adjust)
+                                current_degree = pos_record[i - 1] - normal_adjust
+                            elif pos_record[i - 1] <= TOTAL_DEGREE / 2:
+                                strategy = "向下移动" + str(normal_adjust)
+                                current_degree = pos_record[i - 1] + normal_adjust
+                            elif pos_record[i - 1] <= TOTAL_DEGREE * 3 / 4:
+                                strategy = "向上移动" + str(normal_adjust)
+                                current_degree = pos_record[i - 1] - normal_adjust
+                            else:
+                                strategy = "向下移动" + str(normal_adjust)
+                                current_degree = pos_record[i - 1] + normal_adjust
                 else:
+                    stable = True
                     if max(pos_status) == 2:
+                        best_records = []
+                        lower_records = []
                         for history_index in range(len(pos_status)):
                             if pos_status[history_index] == max(pos_status):
-                                current_degree = pos_record[history_index]
+                                best_records.append(pos_record[history_index])
+                            if pos_status[history_index] < max(pos_status):
+                                lower_records.append(pos_status[history_index])
+
+                        if min(best_records) == max(best_records):
+                            for low_record in lower_records:
+                                if low_record in best_records:
+                                    stable = False
+                                    break
+                                current_degree = best_records[0]
                                 strategy = "选择最佳历史" + str(current_degree)
-                                break
-                    else:
+                        else:
+                            print("记录出现波动，更换策略")
+                            stable = False
+
+                    if max(pos_status) != 2 or not stable:
                         strategy = "移动方向错误，从" + str(pos_record[i - 2])+"到" + str(pos_record[i - 1]) + ", "
                         change_pos = pos_record[i - 1] - pos_record[i - 2]
                         if change_pos >= 0:
@@ -356,7 +371,7 @@ def start_cutting():
                         else:
                             strategy += "向下移动" + str(abs(change_pos))
                             current_degree = pos_record[i - 2] + abs(change_pos)
-
+                # 防止超出上线
                 if current_degree < 0:
                     current_degree = 0
                 elif current_degree > TOTAL_DEGREE:
@@ -377,8 +392,9 @@ def start_cutting():
             if rounds >= 5: break
             if time.time() - START <= 45 or (time.time() - START > 45 and rounds < 2):
                 if IF_START == 0: break
-                if len(pos_record) >= 10: break
                 time.sleep(2.35)
+                if len(pos_record) >= 10:
+                    break
                 # 继续游戏的是
                 mouse.move(906, 630)
                 mouse.left()
