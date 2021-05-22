@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['cutting.py'],
-             pathex=['C:\\Users\\arris\\Desktop\\ff14Tools'],
+             pathex=['F:\\GitHub\\FF14-Tools-Package'],
              binaries=[],
-             datas=[('C:\\Users\\arris\\Desktop\\ff14Tools\\lib\\start.mp3',''),('C:\\Users\\arris\\Desktop\\ff14Tools\\lib\\end.mp3','')],
+             datas=[('F:\\GitHub\\FF14-Tools-Package\\lib\\start.mp3','.'),('F:\\GitHub\\FF14-Tools-Package\\lib\\end.mp3','.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -26,4 +26,4 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
-          console=True , icon='fav.ico')
+          console=True , icon='F:\\GitHub\\FF14-Tools-Package\\fav.ico')
